@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Brand colours — Noosa Mini Golf: retro-coastal teal / sage / peach / butter */
+  --color-pp-primary:    #1B4B44;
+  --color-pp-secondary:  #8FBBAE;
+  --color-pp-accent:     #E8A98B;
+  --color-pp-bg:         #F3C4A8;
+  --color-pp-bg-tint:    #FBE8DC;
+  --color-pp-header-bg:  #F5F0A9;
+  --color-pp-surface:    #FFFFFF;
+  --color-pp-text:       #1B2E2B;
+  --color-pp-text-light: #5A7A73;
+  --color-pp-border:     #E0D2C4;
+  --color-pp-success:    #4CAF7D;
+  --color-pp-error:      #E74C3C;
+
+  /* Admin portal */
+  --color-admin-bg:             #FAF6F1;
+  --color-admin-sidebar-active: #E4EFEC;
+  --color-admin-border:         #E8DCD2;
+  --color-admin-table-stripe:   #FAF3EC;
+  --color-admin-stat-blue:      #2196F3;
+  --color-admin-stat-orange:    #E8A98B;
+  --color-admin-stat-purple:    #7C4DFF;
+
+  /* Fonts */
+  --font-display: var(--font-playfair);
+  --font-body:    var(--font-inter);
+  --font-sans:    var(--font-inter);
+}
+
+:root {
+  --shadow-card:     0 4px 16px rgba(27, 75, 68, 0.08);
+  --shadow-button:   0 4px 12px rgba(143, 187, 174, 0.35);
+  --shadow-elevated: 0 8px 32px rgba(27, 75, 68, 0.12);
+
+  --admin-shadow-card:     0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --admin-shadow-sidebar:  1px 0 3px rgba(0, 0, 0, 0.05);
+  --admin-shadow-dropdown: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  background-color: #FBE8DC;
+  color: #1B2E2B;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-playfair), system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-playfair), system-ui, sans-serif;
+}
+
+.pp-input:focus {
+  box-shadow: 0 0 0 3px rgba(143, 187, 174, 0.25);
+}
+
+@keyframes pulse-cta {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+.animate-pulse-cta {
+  animation: pulse-cta 2s ease-in-out infinite;
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+.animate-confetti {
+  animation: confetti-fall linear forwards;
+}
