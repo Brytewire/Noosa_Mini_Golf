@@ -16,11 +16,12 @@
   --color-pp-error:      #E74C3C;
 
   /* Admin portal */
+  --color-admin-primary:        #F3C4A8;
   --color-admin-bg:             #FAF6F1;
   --color-admin-sidebar-active: #E4EFEC;
   --color-admin-border:         #E8DCD2;
   --color-admin-table-stripe:   #FAF3EC;
-  --color-admin-stat-blue:      #2196F3;
+  --color-admin-stat-blue:      #8FBBAE;
   --color-admin-stat-orange:    #E8A98B;
   --color-admin-stat-purple:    #7C4DFF;
 

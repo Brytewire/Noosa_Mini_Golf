@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
-import { adminSelect, adminInsert, adminUpdate, adminDelete } from '@/lib/admin-db'
+import { adminSelect, adminInsert, adminUpdate, adminDelete, adminUploadImage } from '@/lib/admin-db'
 import AnalyticsSection from './analytics-section'
 import { ClipboardList, Mail, Gift, Megaphone, BarChart2, Trophy, Pencil, Trash2, MessageSquare, type LucideIcon } from 'lucide-react'
 
@@ -137,7 +137,7 @@ function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
         <button
           onClick={handleLogin}
           disabled={!password || loading}
-          className="mt-3 flex h-10 w-full items-center justify-center rounded-full bg-pp-primary text-sm font-semibold text-white disabled:opacity-40"
+          className="mt-3 flex h-10 w-full items-center justify-center rounded-full bg-admin-primary text-sm font-semibold text-pp-primary disabled:opacity-40"
         >
           {loading ? 'Checking…' : 'Login'}
         </button>
@@ -294,7 +294,7 @@ function EditModal({ round, onClose, onSaved }: {
               <button onClick={onClose} className="rounded-full bg-zinc-800 px-5 py-2 text-sm font-semibold text-zinc-300 hover:bg-zinc-700">
                 Cancel
               </button>
-              <button onClick={handleSave} disabled={saving} className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630] disabled:opacity-40">
+              <button onClick={handleSave} disabled={saving} className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40">
                 {saving ? 'Saving…' : 'Save Changes'}
               </button>
             </div>
@@ -345,10 +345,9 @@ function AdvertModal({ advert, onClose, onSaved }: {
       if (imageFile) {
         const ext = imageFile.name.split('.').pop() ?? 'jpg'
         const path = `${crypto.randomUUID()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('adverts').upload(path, imageFile, { contentType: imageFile.type })
-        if (uploadError) { setError(`Image upload failed: ${uploadError.message}`); setSaving(false); return }
-        const { data: urlData } = supabase.storage.from('adverts').getPublicUrl(path)
-        imageUrl = urlData.publicUrl
+        const { url, error: uploadError } = await adminUploadImage(imageFile, path)
+        if (uploadError || !url) { setError(`Image upload failed: ${uploadError?.message ?? 'Unknown error'}`); setSaving(false); return }
+        imageUrl = url
       }
       const payload = { name: name.trim(), image_url: imageUrl, book_url: bookUrl.trim(), display_after_holes: selectedHoles, is_active: isActive }
       if (advert) {
@@ -442,7 +441,7 @@ function AdvertModal({ advert, onClose, onSaved }: {
                   key={hole}
                   onClick={() => toggleHole(hole)}
                   className={`flex h-9 items-center justify-center rounded-lg text-sm font-bold transition-colors ${
-                    selectedHoles.includes(hole) ? 'bg-pp-primary text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
+                    selectedHoles.includes(hole) ? 'bg-admin-primary text-pp-primary' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
                   }`}
                 >
                   {hole}
@@ -464,7 +463,7 @@ function AdvertModal({ advert, onClose, onSaved }: {
             </div>
             <button
               onClick={() => setIsActive((prev) => !prev)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${isActive ? 'bg-pp-primary' : 'bg-zinc-600'}`}
+              className={`relative h-6 w-11 rounded-full transition-colors ${isActive ? 'bg-admin-primary' : 'bg-zinc-600'}`}
             >
               <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isActive ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </button>
@@ -473,7 +472,7 @@ function AdvertModal({ advert, onClose, onSaved }: {
 
         <div className="flex justify-end gap-3 border-t border-zinc-800 px-6 py-4">
           <button onClick={onClose} className="rounded-full bg-zinc-800 px-5 py-2 text-sm font-semibold text-zinc-300 hover:bg-zinc-700">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630] disabled:opacity-40">
+          <button onClick={handleSave} disabled={saving} className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40">
             {saving ? 'Saving…' : advert ? 'Save Changes' : 'Create Advert'}
           </button>
         </div>
@@ -515,7 +514,7 @@ function AdvertsSection({ adverts, setAdverts }: {
     <>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="font-display text-2xl text-pp-text">Adverts</h1>
-        <button onClick={() => setCreating(true)} className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630]">
+        <button onClick={() => setCreating(true)} className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B]">
           + New Advert
         </button>
       </div>
@@ -554,7 +553,7 @@ function AdvertsSection({ adverts, setAdverts }: {
                               key={hole}
                               className={`flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold ${
                                 advert.display_after_holes.includes(hole)
-                                  ? 'bg-pp-primary text-white'
+                                  ? 'bg-admin-primary text-pp-primary'
                                   : 'bg-zinc-200 text-zinc-500'
                               }`}
                             >
@@ -636,10 +635,9 @@ function RewardModal({ reward, onClose, onSaved }: {
       if (imageFile) {
         const ext = imageFile.name.split('.').pop() ?? 'jpg'
         const path = `reward-${crypto.randomUUID()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('adverts').upload(path, imageFile, { contentType: imageFile.type })
-        if (uploadError) { setError(`Image upload failed: ${uploadError.message}`); setSaving(false); return }
-        const { data: urlData } = supabase.storage.from('adverts').getPublicUrl(path)
-        imageUrl = urlData.publicUrl
+        const { url, error: uploadError } = await adminUploadImage(imageFile, path)
+        if (uploadError || !url) { setError(`Image upload failed: ${uploadError?.message ?? 'Unknown error'}`); setSaving(false); return }
+        imageUrl = url
       }
       const payload = {
         name: name.trim(), description: description.trim(), prize_value: prizeValue.trim(),
@@ -699,7 +697,7 @@ function RewardModal({ reward, onClose, onSaved }: {
                   type="button"
                   onClick={() => setHoleNumber(hole)}
                   className={`flex h-9 items-center justify-center rounded-lg text-sm font-bold transition-colors ${
-                    holeNumber === hole ? 'bg-pp-primary text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
+                    holeNumber === hole ? 'bg-admin-primary text-pp-primary' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'
                   }`}
                 >
                   {hole}
@@ -732,14 +730,14 @@ function RewardModal({ reward, onClose, onSaved }: {
               <p className="text-xs text-zinc-400">Reward triggers in the app</p>
             </div>
             <button onClick={() => setIsActive(p => !p)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${isActive ? 'bg-pp-primary' : 'bg-zinc-600'}`}>
+              className={`relative h-6 w-11 rounded-full transition-colors ${isActive ? 'bg-admin-primary' : 'bg-zinc-600'}`}>
               <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isActive ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </button>
           </div>
         </div>
         <div className="flex justify-end gap-3 border-t border-zinc-800 px-6 py-4">
           <button onClick={onClose} className="rounded-full bg-zinc-800 px-5 py-2 text-sm font-semibold text-zinc-300 hover:bg-zinc-700">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630] disabled:opacity-40">
+          <button onClick={handleSave} disabled={saving} className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40">
             {saving ? 'Saving…' : reward ? 'Save Changes' : 'Create Reward'}
           </button>
         </div>
@@ -831,7 +829,7 @@ function VoucherModal({ voucher, onClose, onSaved }: {
               <p className="text-xs text-zinc-400">Voucher displays on the results screen</p>
             </div>
             <button onClick={() => setIsActive(p => !p)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${isActive ? 'bg-pp-primary' : 'bg-zinc-600'}`}>
+              className={`relative h-6 w-11 rounded-full transition-colors ${isActive ? 'bg-admin-primary' : 'bg-zinc-600'}`}>
               <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isActive ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </button>
           </div>
@@ -839,7 +837,7 @@ function VoucherModal({ voucher, onClose, onSaved }: {
         <div className="flex justify-end gap-3 border-t border-zinc-800 px-6 py-4">
           <button onClick={onClose} className="rounded-full bg-zinc-800 px-5 py-2 text-sm font-semibold text-zinc-300 hover:bg-zinc-700">Cancel</button>
           <button onClick={handleSave} disabled={saving}
-            className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630] disabled:opacity-40">
+            className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40">
             {saving ? 'Saving…' : voucher ? 'Save Changes' : 'Create Voucher'}
           </button>
         </div>
@@ -941,18 +939,18 @@ function RewardsSection() {
           <div className="flex rounded-lg bg-zinc-100 p-0.5">
             {(['setup', 'claims', 'voucher'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${activeTab === tab ? 'bg-pp-primary text-white shadow-sm' : 'text-pp-text-light hover:text-pp-text'}`}>
+                className={`rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${activeTab === tab ? 'bg-admin-primary text-pp-primary shadow-sm' : 'text-pp-text-light hover:text-pp-text'}`}>
                 {tab === 'setup' ? 'Hole-in-One' : tab === 'claims' ? `Claims${claims.length > 0 ? ` (${claims.length})` : ''}` : 'Completion'}
               </button>
             ))}
           </div>
           {activeTab === 'setup' && (
-            <button onClick={() => setCreating(true)} className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630]">
+            <button onClick={() => setCreating(true)} className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B]">
               + New Reward
             </button>
           )}
           {activeTab === 'voucher' && (
-            <button onClick={() => setCreatingVoucher(true)} className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630]">
+            <button onClick={() => setCreatingVoucher(true)} className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B]">
               + New Voucher
             </button>
           )}
@@ -982,7 +980,7 @@ function RewardsSection() {
                       <img src={reward.image_url} alt={reward.name} className="h-full w-full object-contain" />
                     </div>
                   ) : (
-                    <div className="flex h-[370px] items-center justify-center bg-pp-primary">
+                    <div className="flex h-[370px] items-center justify-center bg-admin-primary">
                       <span className="text-4xl">🎯</span>
                     </div>
                   )}
@@ -1002,7 +1000,7 @@ function RewardsSection() {
                           <span
                             key={hole}
                             className={`flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-bold ${
-                              reward.hole_number === hole ? 'bg-pp-primary text-white' : 'bg-zinc-200 text-zinc-500'
+                              reward.hole_number === hole ? 'bg-admin-primary text-pp-primary' : 'bg-zinc-200 text-zinc-500'
                             }`}
                           >
                             {hole}
@@ -1039,8 +1037,8 @@ function RewardsSection() {
           <div className="overflow-hidden rounded-xl ring-1 ring-admin-border">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-pp-primary">
-                  <tr className="text-left text-xs text-white">
+                <thead className="bg-admin-primary">
+                  <tr className="text-left text-xs text-pp-primary">
                     <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Date</th>
                     <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Player</th>
                     <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Email</th>
@@ -1065,7 +1063,7 @@ function RewardsSection() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           {claim.player_email && !claim.emailed && (
                             <button onClick={() => emailClaim(claim)} disabled={emailingId === claim.id}
-                              className="rounded-full bg-pp-primary px-3 py-1 text-xs font-semibold text-white hover:bg-[#0F3630] disabled:opacity-40">
+                              className="rounded-full bg-admin-primary px-3 py-1 text-xs font-semibold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40">
                               {emailingId === claim.id ? 'Sending…' : 'Email Prize'}
                             </button>
                           )}
@@ -1211,7 +1209,7 @@ function LeaderboardSection() {
           <button onClick={fetchLeaderboard} className="rounded-full bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-600 hover:bg-zinc-200">
             ↺ Refresh
           </button>
-          <button onClick={() => window.open('/admin/leaderboard-display', '_blank')} className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630]">
+          <button onClick={() => window.open('/admin/leaderboard-display', '_blank')} className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B]">
             ⊞ Display Mode
           </button>
         </div>
@@ -1221,8 +1219,8 @@ function LeaderboardSection() {
         <div className="flex h-64 items-center justify-center text-zinc-400">Loading…</div>
       ) : (
         <div className="mx-auto max-w-xl overflow-hidden rounded-xl bg-white ring-1 ring-admin-border">
-          <div className="bg-pp-primary px-4 py-3">
-            <h2 className="font-display text-lg text-white">⛳ Noosa Mini Golf</h2>
+          <div className="bg-admin-primary px-4 py-3">
+            <h2 className="font-display text-lg text-pp-primary">⛳ Noosa Mini Golf</h2>
           </div>
           <table className="w-full text-sm">
             <thead>
@@ -1272,7 +1270,7 @@ function LeaderboardSection() {
                             className="w-12 rounded-lg bg-white px-1 py-1.5 text-center text-sm text-zinc-900 ring-2 ring-pp-primary focus:outline-none"
                           />
                           <button onClick={(e) => { e.stopPropagation(); handleSave(entry.id) }} disabled={saving}
-                            className="rounded-md bg-pp-primary px-2 py-1 text-xs font-bold text-white hover:bg-[#0F3630] disabled:opacity-40">✓</button>
+                            className="rounded-md bg-admin-primary px-2 py-1 text-xs font-bold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40">✓</button>
                           <button onClick={(e) => { e.stopPropagation(); setEditingId(null) }}
                             className="rounded-md bg-zinc-200 px-2 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-300">✕</button>
                         </div>
@@ -1361,9 +1359,9 @@ function FeedbackSection() {
       {/* Summary cards */}
       {rows.length > 0 && (
         <div className="mb-6 grid grid-cols-6 gap-3">
-          <div className="col-span-1 flex flex-col items-center justify-center rounded-xl bg-pp-primary px-4 py-4 text-center text-white">
+          <div className="col-span-1 flex flex-col items-center justify-center rounded-xl bg-admin-primary px-4 py-4 text-center text-pp-primary">
             <p className="font-display text-4xl">{avg}</p>
-            <p className="mt-1 text-xs text-white/70">Avg Rating</p>
+            <p className="mt-1 text-xs text-pp-primary/70">Avg Rating</p>
           </div>
           {counts.map(({ rating, count }) => {
             const r = RATING_LABELS[rating]
@@ -1392,8 +1390,8 @@ function FeedbackSection() {
       ) : (
         <div className="flex-1 min-h-0 overflow-auto rounded-xl ring-1 ring-admin-border">
             <table className="min-w-full text-sm">
-              <thead className="bg-pp-primary">
-                <tr className="text-left text-xs text-white">
+              <thead className="bg-admin-primary">
+                <tr className="text-left text-xs text-pp-primary">
                   <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Date</th>
                   <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Time</th>
                   <th className="px-4 py-3 font-semibold uppercase tracking-wider">Rating</th>
@@ -1569,10 +1567,10 @@ function Dashboard() {
   if (section === 'feedback') {
     return (
       <div className="flex h-screen overflow-hidden bg-admin-bg text-pp-text">
-        <aside className="flex w-56 shrink-0 flex-col bg-pp-primary">
-          <div className="flex flex-col items-center border-b border-white/20 px-4 py-5">
+        <aside className="flex w-56 shrink-0 flex-col bg-admin-primary">
+          <div className="flex flex-col items-center border-b border-pp-primary/20 px-4 py-5">
             <Image src="/images/NMG-Logo.webp" alt="Noosa Mini Golf" width={150} height={90} className="object-contain" />
-            <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-white/60">Admin Portal</p>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-pp-primary/60">Admin Portal</p>
           </div>
           <nav className="flex-1 px-2 py-4">
             {NAV.map((item) => {
@@ -1580,20 +1578,20 @@ function Dashboard() {
               const active = section === item.id
               return (
                 <button key={item.id} onClick={() => setSection(item.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors mb-1 ${active ? 'bg-white/20 text-white border-l-[3px] border-white pl-[9px]' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
-                  <item.Icon size={16} className={active ? 'text-white' : 'text-white/70'} />
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors mb-1 ${active ? 'bg-pp-primary/15 text-pp-primary border-l-[3px] border-pp-primary pl-[9px]' : 'text-pp-primary/70 hover:bg-pp-primary/10 hover:text-pp-primary'}`}>
+                  <item.Icon size={16} className={active ? 'text-pp-primary' : 'text-pp-primary/70'} />
                   <span>{item.label}</span>
                   {badge !== null && (
                     item.id === 'feedback'
                       ? <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${badge > 0 ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'}`}>{badge > 0 ? `${badge}!` : '✓'}</span>
-                      : <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${active ? 'bg-white/20 text-white' : 'bg-white/10 text-white/70'}`}>{badge}</span>
+                      : <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${active ? 'bg-pp-primary/20 text-pp-primary' : 'bg-pp-primary/10 text-pp-primary/70'}`}>{badge}</span>
                   )}
                 </button>
               )
             })}
           </nav>
-          <div className="border-t border-white/20 px-2 py-4">
-            <button onClick={() => { sessionStorage.removeItem('admin_auth'); window.location.reload() }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+          <div className="border-t border-pp-primary/20 px-2 py-4">
+            <button onClick={() => { sessionStorage.removeItem('admin_auth'); window.location.reload() }} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-pp-primary/70 hover:bg-pp-primary/10 hover:text-pp-primary transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
               <span>Log Out</span>
             </button>
@@ -1610,7 +1608,7 @@ function Dashboard() {
     <div className="flex min-h-screen bg-admin-bg text-pp-text">
 
       {/* Sidebar */}
-      <aside className="flex w-56 shrink-0 flex-col bg-pp-primary">
+      <aside className="flex w-56 shrink-0 flex-col bg-admin-primary">
         <div className="flex flex-col items-center border-b border-white/20 px-4 py-5">
           <Image src="/images/NMG-Logo.webp" alt="Noosa Mini Golf" width={150} height={90} className="object-contain" />
           <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-white/60">Admin Portal</p>
@@ -1626,14 +1624,14 @@ function Dashboard() {
                 onClick={() => setSection(item.id)}
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors mb-1 ${
                   active
-                    ? 'bg-white/20 text-white border-l-[3px] border-white pl-[9px]'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    ? 'bg-pp-primary/15 text-pp-primary border-l-[3px] border-pp-primary pl-[9px]'
+                    : 'text-pp-primary/70 hover:bg-pp-primary/10 hover:text-pp-primary'
                 }`}
               >
-                <item.Icon size={16} className={active ? 'text-white' : 'text-white/70'} />
+                <item.Icon size={16} className={active ? 'text-pp-primary' : 'text-pp-primary/70'} />
                 <span>{item.label}</span>
                 {badge !== null && (
-                  <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${active ? 'bg-white/20 text-white' : 'bg-white/10 text-white/70'}`}>
+                  <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-semibold ${active ? 'bg-pp-primary/20 text-pp-primary' : 'bg-pp-primary/10 text-pp-primary/70'}`}>
                     {badge}
                   </span>
                 )}
@@ -1642,10 +1640,10 @@ function Dashboard() {
           })}
         </nav>
 
-        <div className="border-t border-white/20 px-2 py-4">
+        <div className="border-t border-pp-primary/20 px-2 py-4">
           <button
             onClick={() => { sessionStorage.removeItem('admin_auth'); window.location.reload() }}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-pp-primary/70 hover:bg-pp-primary/10 hover:text-pp-primary transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             <span>Log Out</span>
@@ -1679,8 +1677,8 @@ function Dashboard() {
               <div className="overflow-hidden rounded-xl ring-1 ring-admin-border">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-pp-primary">
-                      <tr className="text-left text-xs text-white">
+                    <thead className="bg-admin-primary">
+                      <tr className="text-left text-xs text-pp-primary">
                         <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Date</th>
                         <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Time</th>
                         <th className="px-4 py-3 font-semibold uppercase tracking-wider whitespace-nowrap text-center">Duration</th>
@@ -1732,7 +1730,7 @@ function Dashboard() {
               <button
                 onClick={exportEmails}
                 disabled={emailStats.length === 0}
-                className="rounded-full bg-pp-primary px-5 py-2 text-sm font-semibold text-white hover:bg-[#0F3630] disabled:opacity-40"
+                className="rounded-full bg-admin-primary px-5 py-2 text-sm font-semibold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40"
               >
                 Export CSV
               </button>
@@ -1743,8 +1741,8 @@ function Dashboard() {
             ) : (
               <div className="overflow-hidden rounded-xl ring-1 ring-admin-border">
                 <table className="w-full text-sm">
-                  <thead className="bg-pp-primary">
-                    <tr className="text-left text-xs text-white">
+                  <thead className="bg-admin-primary">
+                    <tr className="text-left text-xs text-pp-primary">
                       <th className="px-5 py-3 font-semibold uppercase tracking-wider">Email</th>
                       <th className="px-5 py-3 font-semibold uppercase tracking-wider whitespace-nowrap">Date Entered</th>
                       <th className="px-5 py-3 text-right font-semibold uppercase tracking-wider">Rounds</th>
@@ -1770,7 +1768,7 @@ function Dashboard() {
                             <td className="px-3 py-2 whitespace-nowrap">
                               <div className="flex items-center gap-1">
                                 <button onClick={() => handleEmailSave(stat.email)} disabled={savingEmail}
-                                  className="rounded-md bg-pp-primary px-2.5 py-1 text-xs font-bold text-white hover:bg-[#0F3630] disabled:opacity-40">✓</button>
+                                  className="rounded-md bg-admin-primary px-2.5 py-1 text-xs font-bold text-pp-primary hover:bg-[#E8A98B] disabled:opacity-40">✓</button>
                                 <button onClick={() => setEditingEmail(null)}
                                   className="rounded-md bg-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-300">✕</button>
                               </div>

@@ -42,9 +42,9 @@ function StatCard({ label, value, sub, accent = 'green' }: {
   sub?: string
   accent?: 'green' | 'blue'
 }) {
-  const borderColor = accent === 'green' ? 'border-l-pp-primary' : 'border-l-[#2196F3]'
-  const valueColor = accent === 'green' ? 'text-pp-primary' : 'text-[#1976D2]'
-  const labelColor = accent === 'green' ? 'text-pp-text-light' : 'text-[#1565C0]'
+  const borderColor = accent === 'green' ? 'border-l-pp-primary' : 'border-l-[#8FBBAE]'
+  const valueColor = accent === 'green' ? 'text-pp-primary' : 'text-[#8FBBAE]'
+  const labelColor = accent === 'green' ? 'text-pp-text-light' : 'text-[#5A7A73]'
   return (
     <div className={`rounded-xl bg-white p-4 ring-1 ring-admin-border border-l-4 ${borderColor}`}>
       <p className={`text-xs font-semibold uppercase tracking-wider ${labelColor}`}>{label}</p>
@@ -54,7 +54,7 @@ function StatCard({ label, value, sub, accent = 'green' }: {
   )
 }
 
-function BarChart({ data, skipLabel = 1, colorClass = 'bg-pp-primary', barAreaClass = 'h-36', fillHeight = false }: {
+function BarChart({ data, skipLabel = 1, colorClass = 'bg-admin-primary', barAreaClass = 'h-36', fillHeight = false }: {
   data: { label: string; value: number }[]
   skipLabel?: number
   colorClass?: string
@@ -327,7 +327,7 @@ export default function AnalyticsSection() {
                 key={p}
                 onClick={() => setPeriod(p)}
                 className={`rounded-md px-4 py-1.5 text-sm font-semibold transition-colors ${
-                  period === p ? 'bg-pp-primary text-white shadow-sm' : 'text-pp-text-light hover:text-pp-text'
+                  period === p ? 'bg-admin-primary text-white shadow-sm' : 'text-pp-text-light hover:text-pp-text'
                 }`}
               >
                 {p === 'all' ? 'All Time' : p === 'year' ? 'Year' : p === 'month' ? 'Month' : 'Date Range'}
@@ -412,7 +412,7 @@ export default function AnalyticsSection() {
                 {totalRounds === 0 ? (
                   <p className="py-4 text-center text-xs text-pp-text-light">No games in this period</p>
                 ) : (
-                  <BarChart data={gamesPerDayOfWeek} skipLabel={1} colorClass="bg-pp-primary" fillHeight />
+                  <BarChart data={gamesPerDayOfWeek} skipLabel={1} colorClass="bg-admin-primary" fillHeight />
                 )}
               </div>
             </section>
@@ -438,7 +438,7 @@ export default function AnalyticsSection() {
               {totalRounds === 0 ? (
                 <p className="py-10 text-center text-sm text-pp-text-light">No games in this period</p>
               ) : (
-                <BarChart data={timeDistribution} skipLabel={1} colorClass="bg-[#2196F3]" />
+                <BarChart data={timeDistribution} skipLabel={1} colorClass="bg-[#8FBBAE]" />
               )}
             </div>
           </div>
@@ -456,7 +456,7 @@ export default function AnalyticsSection() {
                       <span className="w-56 shrink-0 truncate text-sm text-pp-text" title={a.name}>{a.name}</span>
                       <div className="flex-1 overflow-hidden rounded-full bg-zinc-100" style={{ height: 22 }}>
                         <div
-                          className="flex h-full items-center justify-end rounded-full pr-2 bg-pp-primary transition-all duration-500"
+                          className="flex h-full items-center justify-end rounded-full pr-2 bg-admin-primary transition-all duration-500"
                           style={{ width: `${Math.max(a.ctrNum, a.impressions > 0 ? 2 : 0)}%` }}
                         >
                           {a.ctrNum >= 8 && <span className="text-[10px] font-bold text-white">{a.ctr}</span>}
@@ -483,7 +483,7 @@ export default function AnalyticsSection() {
               <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-pp-text-light">Per-Advert Breakdown</p>
               <div className="overflow-hidden rounded-xl ring-1 ring-admin-border">
                 <table className="w-full text-sm">
-                  <thead className="bg-pp-primary">
+                  <thead className="bg-admin-primary">
                     <tr className="text-left text-xs text-white">
                       <th className="px-5 py-3 font-semibold uppercase tracking-wider">Advert</th>
                       <th className="px-5 py-3 text-right font-semibold uppercase tracking-wider">Shown</th>

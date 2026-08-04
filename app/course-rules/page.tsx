@@ -32,7 +32,7 @@ export default function CourseRulesPage() {
       <main className="mx-auto max-w-md px-4 py-8">
         <button
           onClick={() => router.push('/score/1')}
-          className="flex h-[52px] w-full items-center justify-center rounded-full bg-pp-secondary font-display text-base tracking-wide text-pp-primary shadow-[var(--shadow-button)] transition-transform active:scale-[0.97]"
+          className="flex h-[52px] w-full items-center justify-center rounded-full bg-pp-secondary font-display text-base font-bold tracking-wide text-pp-primary shadow-[var(--shadow-button)] transition-transform active:scale-[0.97]"
         >
           Let&apos;s Play! →
         </button>

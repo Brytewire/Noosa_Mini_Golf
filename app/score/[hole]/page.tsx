@@ -425,21 +425,21 @@ export default function ScorePage() {
       )}
 
       {/* Header */}
-      <div className="rounded-b-3xl bg-pp-primary px-4 pb-5 pt-8 text-white">
+      <div className="rounded-b-3xl bg-pp-secondary px-4 pb-5 pt-8 text-pp-primary">
         <div className="flex items-center justify-between">
-          <button onClick={handleBack} className="text-sm text-white/80 hover:text-white">
+          <button onClick={handleBack} className="text-sm text-pp-primary/80 hover:text-pp-primary">
             ← Back
           </button>
           <div className="text-center">
-            <p className="text-xs text-white/70">Noosa Mini Golf</p>
-            <p className="font-display text-4xl text-white">Hole {hole} of 18</p>
+            <p className="text-xs text-pp-primary/70">Noosa Mini Golf</p>
+            <p className="font-display text-4xl text-pp-primary">Hole {hole} of 18</p>
           </div>
           <div className="w-12" />
         </div>
-        {/* Gold progress bar — 12px tall */}
-        <div className="mt-4 h-3 w-full rounded-full bg-white/20">
+        {/* Progress bar — 12px tall */}
+        <div className="mt-4 h-3 w-full rounded-full bg-pp-primary/15">
           <div
-            className="h-3 rounded-full bg-pp-secondary transition-all duration-500"
+            className="h-3 rounded-full bg-pp-primary transition-all duration-500"
             style={{ width: `${(hole / 18) * 100}%` }}
           />
         </div>
@@ -496,7 +496,7 @@ export default function ScorePage() {
         <button
           onClick={handleNext}
           disabled={!allScored}
-          className="mt-6 flex h-[52px] w-full items-center justify-center rounded-full bg-pp-secondary font-display text-base tracking-wide text-pp-primary shadow-[var(--shadow-button)] transition-transform active:scale-[0.97] disabled:bg-[#D5DDD5] disabled:text-[#8A9A8A] disabled:shadow-none"
+          className="mt-6 flex h-[52px] w-full items-center justify-center rounded-full bg-pp-secondary font-display text-base tracking-wide text-pp-primary shadow-[var(--shadow-button)] transition-transform active:scale-[0.97] disabled:border disabled:border-pp-border disabled:bg-white disabled:text-[#8A9A8A] disabled:shadow-none"
         >
           {isLastHole ? '🏆 See Final Scores →' : `Next: Hole ${hole + 1} →`}
         </button>

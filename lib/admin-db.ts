@@ -81,3 +81,27 @@ export async function adminDelete(
 ): Promise<AdminResult<null>> {
   return adminFetch<null>({ operation: 'delete', table, filters })
 }
+
+// ── STORAGE UPLOAD ───────────────────────────────────────────────────────────
+
+export async function adminUploadImage(
+  file: File,
+  path: string
+): Promise<{ url: string | null; error: { message: string } | null }> {
+  const password =
+    typeof sessionStorage !== 'undefined'
+      ? (sessionStorage.getItem('admin_pw') ?? '')
+      : ''
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('path', path)
+
+  const res = await fetch('/api/admin/storage', {
+    method: 'POST',
+    headers: { 'x-admin-password': password },
+    body: formData,
+  })
+
+  return res.json()
+}
