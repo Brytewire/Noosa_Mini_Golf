@@ -1307,11 +1307,13 @@ interface FeedbackRow {
 }
 
 const RATING_LABELS: Record<number, { emoji: string; label: string; color: string }> = {
+  5: { emoji: '🤩', label: 'Amazing',   color: 'text-emerald-600 bg-emerald-50' },
   4: { emoji: '😄', label: 'Excellent', color: 'text-emerald-600 bg-emerald-50' },
   3: { emoji: '😊', label: 'Good',      color: 'text-pp-primary bg-pp-bg' },
   2: { emoji: '😐', label: 'Okay',      color: 'text-amber-600 bg-amber-50' },
   1: { emoji: '😞', label: 'Poor',      color: 'text-red-600 bg-red-50' },
 }
+const UNKNOWN_RATING = { emoji: '⭐', label: 'Unrated', color: 'text-zinc-500 bg-zinc-100' }
 
 function FeedbackSection() {
   const [rows, setRows] = useState<FeedbackRow[]>([])
@@ -1343,7 +1345,7 @@ function FeedbackSection() {
     setSavingStatusId(null)
   }
 
-  const counts = [4, 3, 2, 1].map((r) => ({ rating: r, count: rows.filter((f) => f.rating === r).length }))
+  const counts = [5, 4, 3, 2, 1].map((r) => ({ rating: r, count: rows.filter((f) => f.rating === r).length }))
   const avg = rows.length ? (rows.reduce((s, f) => s + f.rating, 0) / rows.length).toFixed(1) : null
 
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -1358,13 +1360,13 @@ function FeedbackSection() {
 
       {/* Summary cards */}
       {rows.length > 0 && (
-        <div className="mb-6 grid grid-cols-6 gap-3">
+        <div className="mb-6 grid grid-cols-7 gap-3">
           <div className="col-span-1 flex flex-col items-center justify-center rounded-xl bg-admin-primary px-4 py-4 text-center text-pp-primary">
             <p className="font-display text-4xl">{avg}</p>
             <p className="mt-1 text-xs text-pp-primary/70">Avg Rating</p>
           </div>
           {counts.map(({ rating, count }) => {
-            const r = RATING_LABELS[rating]
+            const r = RATING_LABELS[rating] ?? UNKNOWN_RATING
             return (
               <div key={rating} className="flex flex-col items-center justify-center rounded-xl bg-white px-3 py-4 text-center ring-1 ring-admin-border">
                 <span className="text-2xl">{r.emoji}</span>
@@ -1403,7 +1405,7 @@ function FeedbackSection() {
               </thead>
               <tbody className="divide-y divide-admin-border">
                 {rows.map((row, idx) => {
-                  const r = RATING_LABELS[row.rating]
+                  const r = RATING_LABELS[row.rating] ?? UNKNOWN_RATING
                   return (
                     <tr key={row.id} className={`transition-colors hover:bg-[#EDF5ED] ${idx % 2 === 1 ? 'bg-admin-table-stripe' : 'bg-white'}`}>
                       <td className="px-4 py-3 whitespace-nowrap text-zinc-500">{fmtDate(row.created_at)}</td>

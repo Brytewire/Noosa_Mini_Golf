@@ -13,9 +13,9 @@ interface Entry {
 const REFRESH_MS = 30_000
 
 const RANK_COLOURS = [
-  { row: 'bg-[#8FBBAE]/10 border-l-4 border-[#8FBBAE]', rank: 'text-[#8FBBAE]', name: 'text-white text-xl font-black', score: 'text-[#8FBBAE] text-3xl font-black', medal: '🥇' },
-  { row: 'bg-slate-400/10 border-l-4 border-slate-400', rank: 'text-slate-300', name: 'text-white text-lg font-bold', score: 'text-slate-300 text-2xl font-black', medal: '🥈' },
-  { row: 'bg-orange-700/10 border-l-4 border-orange-600', rank: 'text-orange-400', name: 'text-white text-lg font-bold', score: 'text-orange-400 text-2xl font-black', medal: '🥉' },
+  { row: 'bg-[#FBEEE6] border-l-4 border-pp-accent', rank: 'text-pp-accent', name: 'text-pp-text text-xl font-black', score: 'text-pp-primary text-3xl font-black', medal: '🥇' },
+  { row: 'bg-slate-100 border-l-4 border-slate-400', rank: 'text-slate-500', name: 'text-pp-text text-lg font-bold', score: 'text-pp-primary text-2xl font-black', medal: '🥈' },
+  { row: 'bg-orange-50 border-l-4 border-orange-400', rank: 'text-orange-500', name: 'text-pp-text text-lg font-bold', score: 'text-pp-primary text-2xl font-black', medal: '🥉' },
 ]
 
 export default function LeaderboardDisplay() {
@@ -66,10 +66,10 @@ export default function LeaderboardDisplay() {
   const secondsUntilRefresh = REFRESH_MS / 1000 - Math.floor((now - lastUpdated.getTime()) / 1000)
 
   return (
-    <div ref={containerRef} className="flex min-h-screen flex-col bg-[#0F3630] text-white">
+    <div ref={containerRef} className="flex min-h-screen flex-col bg-admin-primary text-pp-primary">
 
       {/* Header */}
-      <header className="flex items-center justify-between border-b border-white/10 px-8 py-4">
+      <header className="flex items-center justify-between border-b border-pp-primary/20 px-8 py-4">
         <div className="flex items-center gap-5">
           <Image
             src="/images/NMG-Logo.webp"
@@ -79,23 +79,23 @@ export default function LeaderboardDisplay() {
             className="object-contain"
           />
           <div>
-            <h1 className="font-display text-3xl font-black tracking-tight text-white">Leaderboard</h1>
-            <p className="text-sm text-white/40">Noosa Mini Golf · Lowest score wins</p>
+            <h1 className="font-display text-3xl font-black tracking-tight text-pp-primary">Leaderboard</h1>
+            <p className="text-sm text-pp-primary/60">Noosa Mini Golf · Lowest score wins</p>
           </div>
         </div>
         <div className="flex items-center gap-6">
           <div className="text-right">
-            <p className="text-xs text-white/30">
+            <p className="text-xs text-pp-primary/50">
               {lastUpdated.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}
             </p>
-            <p className="text-xs text-white/20">
+            <p className="text-xs text-pp-primary/40">
               Refreshing in {Math.max(0, secondsUntilRefresh)}s
             </p>
           </div>
           <button
             onClick={toggleFullscreen}
             title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white/60 transition-colors hover:bg-white/20 hover:text-white"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-pp-primary/10 text-pp-primary/60 transition-colors hover:bg-pp-primary/20 hover:text-pp-primary"
           >
             {isFullscreen ? (
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -113,18 +113,18 @@ export default function LeaderboardDisplay() {
       {/* Single leaderboard column — one course, no comparison needed */}
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
         {/* Column labels */}
-        <div className="grid grid-cols-[4rem_1fr_6rem] border-b border-white/10 bg-white/5 px-6 py-3 text-xs font-semibold uppercase tracking-widest text-white/40">
+        <div className="grid grid-cols-[4rem_1fr_6rem] border-b border-pp-primary/20 bg-white/40 px-6 py-3 text-xs font-semibold uppercase tracking-widest text-pp-primary/60">
           <span className="text-center">Rank</span>
           <span>Player</span>
           <span className="text-center">Score</span>
         </div>
 
         {/* Rows */}
-        <div className="flex-1 divide-y divide-white/5">
+        <div className="flex-1 divide-y divide-pp-primary/10 bg-white/60">
           {loading ? (
-            <div className="flex h-full items-center justify-center text-white/30">Loading…</div>
+            <div className="flex h-full items-center justify-center text-pp-primary/50">Loading…</div>
           ) : entries.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center gap-3 text-white/30">
+            <div className="flex h-full flex-col items-center justify-center gap-3 text-pp-primary/50">
               <span className="text-5xl">🌴</span>
               <span className="text-sm">No scores yet — be first!</span>
             </div>
@@ -133,19 +133,19 @@ export default function LeaderboardDisplay() {
             return (
               <div
                 key={entry.id}
-                className={`grid grid-cols-[4rem_1fr_6rem] items-center px-6 py-4 ${style?.row ?? ''}`}
+                className={`grid grid-cols-[4rem_1fr_6rem] items-center px-6 py-4 ${style?.row ?? 'bg-white'}`}
               >
                 <div className="flex justify-center">
                   {i < 3 ? (
                     <span className="text-2xl leading-none">{style.medal}</span>
                   ) : (
-                    <span className="text-base font-bold text-white/30">{i + 1}</span>
+                    <span className="text-base font-bold text-pp-text-light">{i + 1}</span>
                   )}
                 </div>
-                <span className={style?.name ?? 'text-white/70 text-base font-semibold'}>
+                <span className={style?.name ?? 'text-pp-text text-base font-semibold'}>
                   {entry.player_name}
                 </span>
-                <span className={`text-center ${style?.score ?? 'text-white/60 text-xl font-bold'}`}>
+                <span className={`text-center ${style?.score ?? 'text-pp-primary text-xl font-bold'}`}>
                   {entry.total_score}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export default function LeaderboardDisplay() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-3 text-center text-xs text-white/15">
+      <footer className="border-t border-pp-primary/20 py-3 text-center text-xs text-pp-primary/40">
         Refreshes automatically every 30 seconds · Noosa Mini Golf
       </footer>
     </div>
