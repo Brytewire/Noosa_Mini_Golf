@@ -75,7 +75,7 @@ export default function ResultsPage() {
 
         const { data: player, error: playerError } = await supabase
           .from('players')
-          .insert({ round_id: round.id, player_name: p.name, player_order: i, total_score: total })
+          .insert({ round_id: round.id, player_name: p.name, player_order: i + 1, total_score: total })
           .select('id')
           .single()
 
