@@ -1609,9 +1609,9 @@ function Dashboard() {
 
       {/* Sidebar */}
       <aside className="flex w-56 shrink-0 flex-col bg-admin-primary">
-        <div className="flex flex-col items-center border-b border-white/20 px-4 py-5">
+        <div className="flex flex-col items-center border-b border-pp-primary/20 px-4 py-5">
           <Image src="/images/NMG-Logo.webp" alt="Noosa Mini Golf" width={150} height={90} className="object-contain" />
-          <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-white/60">Admin Portal</p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-pp-primary/60">Admin Portal</p>
         </div>
 
         <nav className="flex-1 px-2 py-4">
